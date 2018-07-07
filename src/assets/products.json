@@ -1,0 +1,32 @@
+[
+  {
+    "id": "b98a5b74-805f-11e8-ace2-309c2328295e",
+    "price": 8.00,
+    "name": "Book 1",
+    "description": "Book 1 Description"
+  },
+  {
+    "id": "eae602e4-805f-11e8-ace2-309c2328295e",
+    "price": 8.00,
+    "name": "Book 2",
+    "description": "Book 2 Description"
+  },
+  {
+    "id": "f0ac0231-805f-11e8-ace2-309c2328295e",
+    "price": 8.00,
+    "name": "Book 3",
+    "description": "Book 3 Description"
+  },
+  {
+    "id": "113651f7-8060-11e8-ace2-309c2328295e",
+    "price": 8.00,
+    "name": "Book 4",
+    "description": "Book 4 Description"
+  },
+  {
+    "id": "06fe7bfe-8060-11e8-ace2-309c2328295e",
+    "price": 8.00,
+    "name": "Book 5",
+    "description": "Book 5 Description"
+  }
+]
