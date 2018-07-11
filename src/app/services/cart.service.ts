@@ -17,9 +17,11 @@ export class CartService {
   private subscriptionObservable: Observable<Cart>;
   private subscribers: Array<Observer<Cart>> = new Array<Observer<Cart>>();
   private products: Product[];
-  
-  private booksGroup:number[][];
-  private groupCount:number=0;
+
+  private booksGroup: number[][];
+  private groupCount: number = 0;
+  private discountGroup: number[];
+  private arr = new Array();
 
   constructor(private storageService: StorageService, private productService: ProductService) {
     this.storage = this.storageService.get();
@@ -56,30 +58,207 @@ export class CartService {
   }
 
   private calculateDiscount(cart: Cart): void {
-      // console.log(cart.items.length);
-      // cart.items.map((x) => x.quantity).reduce((p, n) => p + n, 0);
-      let bookArray =cart.items.map((x) => x.quantity);
-      let totalDeferentBook :number = cart.items.length;
-      let discountPercent :number =0;
-      // if(totalDeferentBook ==2){
-      //   discountPercent =5;
-      // }else if(totalDeferentBook==3){
-      //   discountPercent =10;
-      // }else if(totalDeferentBook == 4){
-      //   discountPercent =20;
-      // }else if(totalDeferentBook == 5){
-      //   discountPercent =25;
-      // }
-      this.groupingCart(bookArray);
+    // console.log(cart.items.length);
+    // cart.items.map((x) => x.quantity).reduce((p, n) => p + n, 0);
+    let bookArray = cart.items.map((x) => x.quantity);
+    let totalDeferentBook: number = cart.items.length;
+    let discountPercent: number = 0;
+    let discountedPrice: number = 0;
+    let totalBooks = cart.items.map((x) => x.quantity).reduce((p, n) => p + n, 0);
+    let finalSet = [];
+
+
+    //console.log(bookArray);
+    if (this.checkMoreBook(bookArray)) {
+      //console.log('More');
+      //get MaxCount in a group
+      let maxCountinSingle = this.getMaxCount(bookArray);
+      let totalElements = 5 * maxCountinSingle; // get total element array
+      let arrayInitial = [];
+      for (let i = 0; i < totalElements; i++) {
+        if (i < totalBooks) {
+          arrayInitial.push(1);
+        } else {
+          arrayInitial.push(0);
+        }
+      }
+
+      for (let i = 0; i < 1000; i++) {
+        let arrTemp = this.randArrayGeneration(bookArray, maxCountinSingle);
+        if (!this.rejectArray(bookArray, arrTemp, maxCountinSingle)) {
+          finalSet.push(arrTemp);
+        }
+      }
+      
+      // console.log(finalSet);
+      let finalPrice=[];
+      finalSet.forEach((value,index)=>{
+         let singleFinalPrice = this.calculatePrice(value,maxCountinSingle);
+         finalPrice.push(singleFinalPrice);
+      });
+
+      //console.log(finalPrice);
+      discountedPrice = Math.min.apply(null, finalPrice);
+      //console.log(minDiscountPrice);
+      //permute the arrayinitial
+      //this.arr = [];
+      // this.heapsPermute(arrayInitial);
+      //this.heapsPermute([1,1,1,0]);
+      //console.log(this.arr);
+
+    } else {
+      discountedPrice = this.priceOnlyOnebook(bookArray, totalDeferentBook, totalBooks);
+    }
+    //Check any book contains more than one book
+    //console.log(discountedPrice);
+
+    cart.grossTotal = discountedPrice;
+
   }
 
-  private groupingCart(bookArray){
-    // console.log(bookArray[1]);
-    console.log(bookArray);
-    for (let entry of bookArray) {
-      console.log("a"+entry);
+  private calculatePrice(arrSingle,maxCountinSingle){
+    //console.log(arrSingle);
+    let discountPrice :number =0;
+    arrSingle.forEach((value,index)=>{
+      let totalCount =0;
+      for(let i=0;i<5;i++){
+        if(value[i]== 1 ){
+          totalCount++;
+        }
+      }
+
+      if(totalCount==1){
+        discountPrice += 8;
+      }
+      else if(totalCount==2){
+        discountPrice += 2 *(8 - 0.4) ;
+      }else if(totalCount==3){
+        discountPrice += 3 * (8 - 0.8) ;
+      }else if(totalCount==4){
+        discountPrice += 4 *(8 - 1.6) ;
+      }else if(totalCount==5){
+        discountPrice += 5 *(8 - 2) ;
+      }
+
+      
+    });
+
+
+    
+    return discountPrice;
+  }
+
+  private rejectArray(bookArray, arrTemp, maxCountinSingle) {
+    let rejectArray = false;
+    bookArray.forEach((item, index) => {
+      let totEle = item;
+      let totVal = 0;
+      for (let i = 0; i < maxCountinSingle; i++) {
+        totVal += arrTemp[i][index];
+      }
+      if (totEle != totVal) {
+        rejectArray = true;
+      }
+
+    });
+    return rejectArray;
+  }
+  private randArrayGeneration(bookArray, maxCountinSingle) {
+    let arrInt = [];
+    for (let i = 0; i < maxCountinSingle; i++) {
+      let arrTemp = [];
+      for (let j = 0; j < 5; j++) {
+        let insVal: number = 0;
+        //
+        if (bookArray[j] != undefined) {
+          //console.log(i + '---' + j + '-----' + bookArray[j] + '---' + maxCountinSingle);
+          if (bookArray[j] == maxCountinSingle) {
+            insVal = 1;
+          } else {
+            insVal = Math.round(Math.random());
+          }
+        } else {
+          insVal = 0;
+        }
+        arrTemp[j] = insVal;
+
+      }
+      arrInt[i] = arrTemp;
+
+    }
+    return arrInt;
+  }
+
+  private swap(array, pos1, pos2) {
+    var temp = array[pos1];
+    array[pos1] = array[pos2];
+    array[pos2] = temp;
+  };
+
+  private heapsPermute(array, n?) {
+    n = n || array.length;
+    if (n === 1) {
+      this.arr.push(array);
+      // slit the array in to max number
+
+      //check the count in each with orginal array
+
+      //if equal push other wise omit
+
+    } else {
+      for (var i = 1; i <= n; i += 1) {
+        this.heapsPermute(array, n - 1);
+        if (n % 2) {
+          var j = 1;
+        } else {
+          var j = i;
+        }
+        this.swap(array, j - 1, n - 1);
+      }
+    }
+  };
+
+
+
+  private getMaxCount(bookArray) {
+    let maxCount: number = 0;
+    bookArray.forEach(function (value) {
+      maxCount = value > maxCount ? value : maxCount;
+    });
+    return maxCount;
+  }
+
+  private priceOnlyOnebook(bookArray, totalDeferentBook, totalBooks) {
+    let priceForOnebook: number = 8;
+    if (totalBooks == 1) {
+      return priceForOnebook;
+    } else if (totalBooks == 2) {
+      return totalBooks * (priceForOnebook - 0.4);
+    }
+    else if (totalBooks == 3) {
+      return totalBooks * (priceForOnebook - 0.8);
+    } else if (totalBooks == 4) {
+      return totalBooks * (priceForOnebook - 1.6);
+    } else {
+      return totalBooks * (priceForOnebook - 2);
     }
   }
+
+  private checkMoreBook(bookArray) {
+    let moreBook: boolean = false;
+    bookArray.forEach(function (value) {
+      // console.log(value);
+      if (value > 1) {
+        moreBook = true;
+      }
+    });
+
+    return moreBook;
+  }
+
+  // private groupingCart(bookArray,totalDeferentBook){
+
+  // }
 
   public empty(): void {
     const newCart = new Cart();
@@ -96,9 +275,9 @@ export class CartService {
     cart.itemsTotal = cart.items
       .map((item) => item.quantity * this.products.find((p) => p.id === item.productId).price)
       .reduce((previous, current) => previous + current, 0);
-   
+
     //calculate grosstotal
-    cart.grossTotal = cart.itemsTotal - cart.discountTotal ;
+    cart.grossTotal = cart.itemsTotal - cart.discountTotal;
     // console.log(cart.discountTotal);
   }
   private retrieve(): Cart {
@@ -112,12 +291,12 @@ export class CartService {
   }
   private dispatch(cart: Cart): void {
     this.subscribers
-        .forEach((sub) => {
-          try {
-            sub.next(cart);
-          } catch (e) {
-            // we want all subscribers to get the update even if one errors.
-          }
-        });
+      .forEach((sub) => {
+        try {
+          sub.next(cart);
+        } catch (e) {
+          // we want all subscribers to get the update even if one errors.
+        }
+      });
   }
 }
